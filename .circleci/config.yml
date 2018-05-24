@@ -6,13 +6,61 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Greeting
+          name: Build Frontend
+          command: npm --version
+  build_rest_api:
+    docker:
+      - image: codestar/circleci-scala-sbt-git:scala-2.11.12-sbt-0.13.15
+    steps:
+      - checkout
+      - run:
+          name: Build Rest API
           command: ls -la
       - run:
-          name: Where is home?
-          command: echo $HOME
+          name: Publish .m2
+          command: |
+            mkdir /root/.m2
+            mkdir /root/.m2/something_else
+            touch /root/.m2/test-file
+            echo "Blah" > /root/.m2/blah
+      - persist_to_workspace:
+          root: /
+          paths:
+            - root/.m2/*
+  build_backend:
+    docker:
+      - image: maven:3.5.3
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /root/.m2
+      - run:
+          name: Build Backend
+          command: ls -la /root/.m2/
+
+  integration_test:
+    docker:
+      - image: docker:18.03.1-ce
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Simple Docker command
+          command: |
+            docker --version
+            docker run hello-world
+
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build_frontend
+      - build_rest_api
+      - build_backend:
+          requires:
+            - build_rest_api
+      - integration_test:
+          requires:
+            - build_frontend
+            - build_backend
+            - build_rest_api
