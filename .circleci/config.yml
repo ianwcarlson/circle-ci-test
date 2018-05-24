@@ -9,7 +9,7 @@ jobs:
           name: Greeting
           command: ls -la
       - run:
-          name: Greeting
+          name: Where is home?
           command: echo $HOME
 workflows:
   version: 2
