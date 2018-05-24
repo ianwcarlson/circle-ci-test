@@ -1,13 +1,10 @@
 version: 2
 jobs:
-  build:
+  build-frontend:
     docker:
-      - image: debian:stretch
+      - image: node:8.11.2
     steps:
       - checkout
       - run:
           name: Greeting
-          command: echo Hello, world.
-      - run:
-          name: Print the Current Time
-          command: date
+          command: ls
